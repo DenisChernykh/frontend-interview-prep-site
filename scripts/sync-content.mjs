@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import MarkdownIt from "markdown-it";
+import { createHighlighter } from "shiki";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -11,11 +12,36 @@ const defaultSourceDir = path.resolve(projectRoot, "..", "interview");
 const generatedDir = path.join(projectRoot, "src", "generated");
 const outputPath = path.join(generatedDir, "site-content.json");
 
+const highlightTheme = "github-dark";
+const highlightedLanguages = ["bash", "css", "diff", "html", "js", "jsx", "json", "markdown", "text", "ts", "tsx"];
+const highlightedLanguageSet = new Set(highlightedLanguages);
+const languageAliases = new Map([
+  ["cjs", "js"],
+  ["javascript", "js"],
+  ["md", "markdown"],
+  ["mjs", "js"],
+  ["plain", "text"],
+  ["plaintext", "text"],
+  ["sh", "bash"],
+  ["shell", "bash"],
+  ["shellscript", "bash"],
+  ["txt", "text"],
+  ["typescript", "ts"],
+]);
+
 const md = new MarkdownIt({
   html: false,
   linkify: true,
   typographer: false,
 });
+
+const originalFence = md.renderer.rules.fence;
+
+md.renderer.rules.fence = (tokens, index, options, env, self) => {
+  const token = tokens[index];
+  if (!env?.highlighter) return renderPlainFence(token);
+  return highlightCode(env.highlighter, token.content, token.info);
+};
 
 const originalLinkOpen =
   md.renderer.rules.link_open ??
@@ -52,9 +78,10 @@ export async function collectPublicContent({
     roadmaps: roadmapSources,
   });
 
-  const tasks = taskSources.map((source) => renderTaskSource(source, routeMap));
-  const theory = theorySources.map((source) => renderTheorySource(source, routeMap));
-  const roadmaps = roadmapSources.map((source) => renderRoadmapSource(source, routeMap));
+  const highlighter = await createSiteHighlighter();
+  const tasks = taskSources.map((source) => renderTaskSource(source, routeMap, highlighter));
+  const theory = theorySources.map((source) => renderTheorySource(source, routeMap, highlighter));
+  const roadmaps = roadmapSources.map((source) => renderRoadmapSource(source, routeMap, highlighter));
 
   return { generatedAt, tasks, theory, roadmaps };
 }
@@ -153,7 +180,7 @@ async function collectSolutions(taskDir) {
   return results;
 }
 
-function renderTaskSource(source, routeMap) {
+function renderTaskSource(source, routeMap, highlighter) {
   const title = getTitle(source.markdown) ?? titleFromId(source.id);
   const statementMarkdown = extractSection(source.markdown, "Задача");
   const walkthroughMarkdown =
@@ -168,14 +195,17 @@ function renderTaskSource(source, routeMap) {
     frequency: source.meta.get("Frequency") ?? "",
     importance: source.meta.get("Importance") ?? "",
     slug: source.meta.get("Slug")?.replace(/^`|`$/g, "") ?? slugWithoutPriority(source.id),
-    statementHtml: renderMarkdown(statementMarkdown || source.markdown, source.readmePath, routeMap),
-    walkthroughHtml: renderMarkdown(walkthroughMarkdown, source.walkthroughPath, routeMap),
-    solutions: source.solutionSources,
+    statementHtml: renderMarkdown(statementMarkdown || source.markdown, source.readmePath, routeMap, highlighter),
+    walkthroughHtml: renderMarkdown(walkthroughMarkdown, source.walkthroughPath, routeMap, highlighter),
+    solutions: source.solutionSources.map((solution) => ({
+      ...solution,
+      html: highlightCode(highlighter, solution.code, solution.language),
+    })),
     relatedTheoryIds: extractLinkedIds(source.markdown, "theory/by-priority"),
   };
 }
 
-function renderTheorySource(source, routeMap) {
+function renderTheorySource(source, routeMap, highlighter) {
   const title = getTitle(source.markdown) ?? titleFromId(source.id);
   const answerMarkdown = [
     extractSection(source.markdown, "Ответы по уровням"),
@@ -191,17 +221,17 @@ function renderTheorySource(source, routeMap) {
     priority: parsePriority(source.id),
     category: source.meta.get("Category") ?? "Other",
     level: source.meta.get("Level") ?? "",
-    questionHtml: renderMarkdown(extractSection(source.markdown, "Question") || source.markdown, source.readmePath, routeMap),
-    answerHtml: renderMarkdown(answerMarkdown || source.markdown, source.readmePath, routeMap),
+    questionHtml: renderMarkdown(extractSection(source.markdown, "Question") || source.markdown, source.readmePath, routeMap, highlighter),
+    answerHtml: renderMarkdown(answerMarkdown || source.markdown, source.readmePath, routeMap, highlighter),
     relatedTaskIds: extractLinkedIds(source.markdown, "tasks/by-priority"),
   };
 }
 
-function renderRoadmapSource(source, routeMap) {
+function renderRoadmapSource(source, routeMap, highlighter) {
   return {
     id: source.id,
     title: getTitle(source.markdown) ?? titleFromId(source.id),
-    html: renderMarkdown(source.markdown, source.absolutePath, routeMap),
+    html: renderMarkdown(source.markdown, source.absolutePath, routeMap, highlighter),
   };
 }
 
@@ -231,9 +261,40 @@ function addPathRoute(map, absolutePath, route) {
   map.set(normalized.replace(/\/README\.md$/, ""), route);
 }
 
-function renderMarkdown(markdown, sourcePath, routeMap) {
+function renderMarkdown(markdown, sourcePath, routeMap, highlighter) {
   if (!markdown.trim()) return "";
-  return md.render(markdown, { sourcePath, routeMap });
+  return md.render(markdown, { sourcePath, routeMap, highlighter });
+}
+
+async function createSiteHighlighter() {
+  return createHighlighter({
+    themes: [highlightTheme],
+    langs: highlightedLanguages,
+  });
+}
+
+function highlightCode(highlighter, code, language) {
+  return highlighter.codeToHtml(code.trimEnd(), {
+    theme: highlightTheme,
+    lang: normalizeLanguage(language),
+  });
+}
+
+function normalizeLanguage(language) {
+  const raw = String(language || "text")
+    .trim()
+    .split(/\s+/)[0]
+    .replace(/^language-/, "")
+    .toLowerCase();
+  const aliased = languageAliases.get(raw) ?? raw;
+  return highlightedLanguageSet.has(aliased) ? aliased : "text";
+}
+
+function renderPlainFence(token) {
+  if (originalFence) return originalFence([token], 0, {}, {}, md.renderer);
+  const language = normalizeLanguage(token.info);
+  const className = language === "text" ? "" : ` class="language-${md.utils.escapeHtml(language)}"`;
+  return `<pre><code${className}>${md.utils.escapeHtml(token.content)}</code></pre>\n`;
 }
 
 function rewriteLocalHref(href, sourcePath, routeMap) {

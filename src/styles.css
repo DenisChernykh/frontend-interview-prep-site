@@ -304,6 +304,10 @@ svg {
   border-radius: 5px;
   padding: 0.1em 0.3em;
 }
+.code-frame {
+  max-width: 100%;
+}
+
 .markdown-body pre,
 .solution-panel pre {
   overflow: auto;
@@ -315,8 +319,24 @@ svg {
   line-height: 1.55;
   font-size: 13px;
 }
+
+.markdown-body .shiki,
+.solution-panel .shiki {
+  margin: 0 0 18px;
+  max-width: 100%;
+  background: #0d1220 !important;
+}
+
+.solution-panel .shiki {
+  margin-bottom: 0;
+}
+
 .markdown-body pre code,
-.solution-panel pre code {
+.solution-panel pre code,
+.markdown-body .shiki code,
+.solution-panel .shiki code {
+  display: block;
+  min-width: max-content;
   background: transparent;
   padding: 0;
   color: inherit;
@@ -432,6 +452,12 @@ svg {
 
   .markdown-body {
     font-size: 16px;
+  }
+
+  .markdown-body pre,
+  .solution-panel pre {
+    padding: 14px;
+    font-size: 12px;
   }
 
   .primary-nav {

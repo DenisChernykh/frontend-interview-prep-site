@@ -7,7 +7,7 @@ import { sampleContent } from "./test/sampleContent";
 describe("App", () => {
   it("renders a mobile reader with searchable tasks and detail tabs", async () => {
     const user = userEvent.setup();
-    render(<App content={sampleContent} initialHash="#/tasks/03-react-ui-autocomplete" />);
+    const { container } = render(<App content={sampleContent} initialHash="#/tasks/03-react-ui-autocomplete" />);
 
     expect(screen.getByRole("heading", { name: "Frontend Interview Prep" })).toBeInTheDocument();
     expect(screen.getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
@@ -15,8 +15,10 @@ describe("App", () => {
 
     await user.click(screen.getByRole("tab", { name: "Solution" }));
     expect(screen.getByRole("tab", { name: "Solution", selected: true })).toBeInTheDocument();
+    const panel = screen.getByLabelText("Junior solution");
     expect(screen.getByRole("button", { name: "Junior" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText(/export function Autocomplete/)).toBeInTheDocument();
+    expect(panel).toHaveTextContent(/export function Autocomplete/);
+    expect(container.querySelector(".solution-panel .shiki")).not.toBeNull();
 
     await user.click(screen.getByRole("tab", { name: "Walkthrough" }));
     expect(screen.getByText("Explain stale response guard.")).toBeInTheDocument();

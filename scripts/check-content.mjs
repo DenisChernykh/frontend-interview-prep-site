@@ -36,6 +36,10 @@ async function main() {
     assert(task.statementHtml, `Task ${task.id} is missing statementHtml`);
     assert(task.walkthroughHtml, `Task ${task.id} is missing walkthroughHtml`);
     assert(task.solutions.length >= 1, `Task ${task.id} has no readable solution`);
+    for (const solution of task.solutions) {
+      assert(solution.code, `Task ${task.id} solution ${solution.level} is missing code`);
+      assert(solution.html?.includes('class="shiki'), `Task ${task.id} solution ${solution.level} is missing highlighted HTML`);
+    }
     for (const id of task.relatedTheoryIds) {
       assert(theoryIds.has(id), `Task ${task.id} links missing theory ${id}`);
     }

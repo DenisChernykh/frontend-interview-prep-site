@@ -361,9 +361,13 @@ function SolutionPanel({ solution }: { solution?: SolutionDoc }) {
   return (
     <section className="solution-panel" aria-label={`${solution.label} solution`}>
       <div className="source-path">{solution.sourcePath}</div>
-      <pre>
-        <code>{solution.code}</code>
-      </pre>
+      {solution.html ? (
+        <div className="code-frame" dangerouslySetInnerHTML={{ __html: solution.html }} />
+      ) : (
+        <pre>
+          <code>{solution.code}</code>
+        </pre>
+      )}
     </section>
   );
 }

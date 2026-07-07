@@ -22,6 +22,7 @@ export const sampleContent: SiteContent = {
           language: "tsx",
           sourcePath: "tasks/by-priority/03-react-ui-autocomplete/solution.junior.tsx",
           code: "export function Autocomplete() { return null; }",
+          html: '<pre class="shiki"><code><span style="color:#f4f7fb">export function Autocomplete() { return null; }</span></code></pre>',
         },
         {
           level: "middle",
@@ -29,6 +30,7 @@ export const sampleContent: SiteContent = {
           language: "tsx",
           sourcePath: "tasks/by-priority/03-react-ui-autocomplete/solution.middle.tsx",
           code: "export function Autocomplete() { return <div />; }",
+          html: '<pre class="shiki"><code><span style="color:#f4f7fb">export function Autocomplete() { return &lt;div /&gt;; }</span></code></pre>',
         },
       ],
     },

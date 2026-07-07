@@ -21,6 +21,7 @@ describe.skipIf(!localSourceAvailable)("sync-content", () => {
       "senior",
       "reference",
     ]);
+    expect(content.tasks[0].solutions[0].html).toContain('class="shiki');
     const serialized = JSON.stringify(content);
     expect(serialized).not.toContain("attempts/");
     expect(serialized).not.toContain("practice.test");

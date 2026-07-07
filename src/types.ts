@@ -6,6 +6,7 @@ export type SolutionDoc = {
   language: string;
   sourcePath: string;
   code: string;
+  html: string;
 };
 
 export type TaskDoc = {
