@@ -1,0 +1,34 @@
+{
+  "name": "frontend-interview-prep-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "sync:content": "node scripts/sync-content.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run sync:content && tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "markdown-it": "latest"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
+    "@testing-library/user-event": "latest",
+    "@types/markdown-it": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "happy-dom": "latest",
+    "vitest": "latest"
+  }
+}
