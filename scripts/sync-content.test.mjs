@@ -1,7 +1,11 @@
+import { existsSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 import { collectPublicContent } from "./sync-content.mjs";
 
-describe("sync-content", () => {
+const localSourceAvailable = existsSync("/Users/denischernykh/Documents/interview/tasks/by-priority");
+
+describe.skipIf(!localSourceAvailable)("sync-content", () => {
   it("collects public reader content without local practice files", async () => {
     const content = await collectPublicContent({
       sourceDir: "/Users/denischernykh/Documents/interview",

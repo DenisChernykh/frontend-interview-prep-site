@@ -27,14 +27,12 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Sync content
-        run: npm run sync:content
-      - name: Check content
+      - name: Check committed content
         run: npm run check:content
       - name: Test
         run: npm test
       - name: Build
-        run: npm run build
+        run: npm run build:app
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
       - name: Configure Pages
