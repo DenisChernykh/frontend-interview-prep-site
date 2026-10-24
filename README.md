@@ -1,14 +1,32 @@
-# Frontend Interview Prep Site
+# Frontend Knowledge Reader
 
-Mobile-first static reader for the Markdown interview-prep base in `/Users/denischernykh/Documents/interview`.
+Адаптивный веб-интерфейс для чтения и навигации по базе знаний frontend-разработчика.
 
-## Commands
+## Возможности
 
-```bash
-npm run sync:content
-npm run check:content
-npm test
-npm run build
+- Синхронизация Markdown-материалов.
+- Маршрутизация для статического размещения.
+- Проверки контента и сборка сайта.
+
+## Инженерные акценты
+
+- Преобразование структурированных материалов в удобный веб-инструмент.
+- Автоматизация обновления содержимого.
+- Мобильная навигация и организация базы знаний.
+
+## Стек
+
+React, TypeScript, Vite, Vitest.
+
+## Навигация по коду
+
+- [src/](src/) — исходный код.
+
+## Разработка
+
+```sh
+pnpm install
+pnpm dev
+pnpm test
+pnpm build
 ```
-
-The app uses hash routes so GitHub Pages can open deep links reliably.
